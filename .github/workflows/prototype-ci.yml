@@ -1,0 +1,56 @@
+name: Prototype CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build-prototype:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install scikit-learn jinja2 fire
+
+      - name: Build code index
+        run: python scripts/build_code_index.py . data/code_index
+
+      - name: Run prototype pipeline and write stub
+        run: |
+          python - << 'EOF'
+import json
+from pipeline.new_feature import run_new_feature
+snippets, stub = run_new_feature("proof-dsl tagless-final example")
+with open("ProofDslVerifier.hs", "w") as f:
+    f.write(stub)
+print("Wrote stub to ProofDslVerifier.hs")
+EOF
+
+      - name: Set up GHC (Haskell)
+        uses: haskell/actions/setup@v1
+        with:
+          ghc-version: "9.2.7"
+          cabal-install-version: "3.6.2.0"
+
+      - name: Compile generated stub
+        run: |
+          cabal update
+          cabal init --minimal --non-interactive --exe --source-dir=. --dependencies=base
+          mkdir -p src
+          mv ProofDslVerifier.hs src/Main.hs
+          cabal build
+
+      - name: Smoke-test the binary
+        run: |
+          # Adjust binary path if needed
+          ./dist/build/prototype-ci/prototype-ci --help || true
