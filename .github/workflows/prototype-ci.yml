@@ -1,3 +1,4 @@
+
 name: Prototype CI
 
 on:
@@ -9,12 +10,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        name: Check out code
 
-      - uses: actions/setup-python@v4
-        name: Set up Python 3.x
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v4
         with:
           python-version: "3.x"
 
@@ -27,6 +29,7 @@ jobs:
         run: python scripts/build_code_index.py . data/code_index
 
       - name: Run prototype pipeline & emit stub
+        continue-on-error: true
         run: |
           python - << 'EOF'
           import json
@@ -41,19 +44,15 @@ jobs:
               f.write(stub)
           print("Wrote stub to ProofDslVerifier.hs")
           EOF
-        continue-on-error: true
 
-      - uses: haskell-actions/setup@v2
-        name: Set up GHC (Haskell)
+      - name: Set up GHC (Haskell)
+        uses: haskell-actions/setup@v2
         with:
           ghc-version: "9.2.7"
-          cabal-version: "3.6.2.0"
 
-            - name: Build Haskell stub
-        working-directory: ${{ github.workspace }}
+      - name: Build Haskell stub
         run: |
           cabal update
-          # Initialize minimal project (base is implied by default)
           cabal init \
             --non-interactive \
             --minimal \
@@ -65,7 +64,7 @@ jobs:
           mv ProofDslVerifier.hs src/Main.hs
           cabal build
 
-
       - name: Smoke-test binary
         run: |
-          ./dist/build/prototype-ci/prototype-ci --help || true
+          ghc --version
+          ./prototype-ci --help || true
