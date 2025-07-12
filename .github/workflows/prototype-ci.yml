@@ -1,15 +1,3 @@
-name: Prototype CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -38,19 +26,5 @@ jobs:
       - name: Build code index
         run: python scripts/build_code_index.py . data/code_index
 
-      - name: Run prototype pipeline & emit stub
-        continue-on-error: true
-        run: |
-          python - << 'EOF'
-          import json
-          from pipeline.new_feature import run_new_feature
-          snippets, stub = run_new_feature("proof-dsl tagless-final example")
-          print("=== Snippets ===")
-          print(json.dumps(snippets, indent=2))
-          with open("ProofDslVerifier.hs", "w") as f:
-              f.write(stub)
-          print("Wrote stub to ProofDslVerifier.hs")
-          EOF
+      # … rest of your steps …
 
-      - name: (Temporary) Skip Haskell compile
-        run: echo "Skipping Haskell compile for now"
