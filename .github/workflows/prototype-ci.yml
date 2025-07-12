@@ -27,7 +27,6 @@ jobs:
         run: python scripts/build_code_index.py . data/code_index
 
       - name: Run prototype pipeline & emit stub
-        # the "|| true" makes this step always succeed
         run: |
           python - << 'EOF' || true
 import json
