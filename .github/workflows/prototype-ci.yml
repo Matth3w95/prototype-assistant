@@ -4,21 +4,22 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
-  build-prototype:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
+      - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.x
         uses: actions/setup-python@v4
         with:
           python-version: "3.x"
 
-      - name: Install Python dependencies
+      - name: Install Python deps
         run: |
           pip install --upgrade pip
           pip install scikit-learn jinja2 fire
@@ -26,28 +27,26 @@ jobs:
       - name: Build code index
         run: python scripts/build_code_index.py . data/code_index
 
-      - name: Run prototype pipeline and write stub
+      - name: Run prototype pipeline & emit stub
         run: |
           python - << 'EOF'
-          from pipeline.new_feature import run_new_feature
+    import json
+    from pipeline.new_feature import run_new_feature
+    snippets, stub = run_new_feature("proof-dsl tagless-final example")
+    print("=== Snippets ===")
+    print(json.dumps(snippets, indent=2))
+    with open("ProofDslVerifier.hs", "w") as f:
+        f.write(stub)
+    print("Wrote stub to ProofDslVerifier.hs")
+    EOF
 
-          # run_new_feature returns (snippets, stub_text)
-          snippets, stub = run_new_feature("proof-dsl tagless-final example")
-
-          # write the stub out as a Haskell file
-          with open("ProofDslVerifier.hs", "w") as f:
-              f.write(stub)
-
-          print("Wrote stub to ProofDslVerifier.hs")
-          EOF
-
-      - name: Set up GHC (Haskell)
+      - name: Set up GHC
         uses: haskell/actions/setup@v1
         with:
           ghc-version: "9.2.7"
           cabal-install-version: "3.6.2.0"
 
-      - name: Compile generated stub
+      - name: Build Haskell stub
         run: |
           cabal update
           cabal init --minimal --non-interactive --exe --source-dir=. --dependencies=base
@@ -55,7 +54,7 @@ jobs:
           mv ProofDslVerifier.hs src/Main.hs
           cabal build
 
-      - name: Smoke-test the binary
+      - name: Smoke-test binary
         run: |
-          # just verify it runs without crashing
           ./dist/build/prototype-ci/prototype-ci --help || true
+
