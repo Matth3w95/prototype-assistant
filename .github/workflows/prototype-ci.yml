@@ -27,28 +27,25 @@ jobs:
         run: python scripts/build_code_index.py . data/code_index
 
       - name: Run prototype pipeline & emit stub
-        # the "|| true" makes this step always succeed even if stubger fails
         run: |
           python - << 'EOF' || true
           import json
           from pipeline.new_feature import run_new_feature
 
           snippets, stub = run_new_feature("proof-dsl tagless-final example")
-
           print("=== Snippets ===")
           print(json.dumps(snippets, indent=2))
 
           with open("ProofDslVerifier.hs", "w") as f:
               f.write(stub)
-
           print("Wrote stub to ProofDslVerifier.hs")
           EOF
 
       - name: Set up GHC (Haskell)
-        uses: haskell/actions/setup@v1
+        uses: haskell-actions/setup@v3
         with:
           ghc-version: "9.2.7"
-          cabal-install-version: "3.6.2.0"
+          cabal-version: "3.6.2.0"
 
       - name: Build Haskell stub
         run: |
