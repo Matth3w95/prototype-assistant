@@ -49,13 +49,22 @@ jobs:
           ghc-version: "9.2.7"
           cabal-version: "3.6.2.0"
 
-      - name: Build Haskell stub
+            - name: Build Haskell stub
+        working-directory: ${{ github.workspace }}
         run: |
           cabal update
-          cabal init --minimal --non-interactive --exe --source-dir=. --dependencies=base
+          # Initialize minimal project (base is implied by default)
+          cabal init \
+            --non-interactive \
+            --minimal \
+            --exe \
+            --package-name=prototype-ci \
+            --package-version=0.1.0.0 \
+            --source-dir=.
           mkdir -p src
           mv ProofDslVerifier.hs src/Main.hs
           cabal build
+
 
       - name: Smoke-test binary
         run: |
