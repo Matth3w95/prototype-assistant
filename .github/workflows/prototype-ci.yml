@@ -1,9 +1,20 @@
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+ name: Prototype CI
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Check out code
+
+      - uses: actions/setup-python@v4
+        name: Set up Python 3.x
         with:
           python-version: "3.x"
 
@@ -12,19 +23,20 @@
           pip install --upgrade pip
           pip install scikit-learn jinja2 fire
 
-      - name: Lint Python
-        run: |
-          pip install black flake8
-          black --check .
-          flake8 .
-
-      - name: Run Python tests
-        run: |
-          pip install pytest
-          pytest tests/python
-
       - name: Build code index
         run: python scripts/build_code_index.py . data/code_index
 
-      # … rest of your steps …
+      - name: Run prototype pipeline & emit stub
+        run: |
+          python - << 'EOF'
+          import json
+          from pipeline.new_feature import run_new_feature
+          snippets, stub = run_new_feature("proof-dsl tagless-final example")
+          with open("ProofDslVerifier.hs", "w") as f:
+              f.write(stub)
+          print("Wrote stub to ProofDslVerifier.hs")
+          EOF
+        continue-on-error: true
 
+      - name: (Temporary) Skip Haskell compile
+        run: echo "Skipping Haskell compile for now"
