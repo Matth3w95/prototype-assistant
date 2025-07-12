@@ -1,4 +1,3 @@
-
 name: Prototype CI
 
 on:
@@ -10,13 +9,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        name: Check out code
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
+        name: Set up Python 3.x
         with:
           python-version: "3.x"
 
@@ -36,7 +34,6 @@ jobs:
           from pipeline.new_feature import run_new_feature
 
           snippets, stub = run_new_feature("proof-dsl tagless-final example")
-
           print("=== Snippets ===")
           print(json.dumps(snippets, indent=2))
 
@@ -46,25 +43,12 @@ jobs:
           EOF
 
       - name: Set up GHC (Haskell)
-        uses: haskell-actions/setup@v2
+        uses: haskell/actions/setup@v1
         with:
           ghc-version: "9.2.7"
 
-      - name: Build Haskell stub
-        run: |
-          cabal update
-          cabal init \
-            --non-interactive \
-            --minimal \
-            --exe \
-            --package-name=prototype-ci \
-            --package-version=0.1.0.0 \
-            --source-dir=.
-          mkdir -p src
-          mv ProofDslVerifier.hs src/Main.hs
-          cabal build
+      - name: Compile generated stub with GHC
+        run: ghc ProofDslVerifier.hs -o prototype-ci
 
       - name: Smoke-test binary
-        run: |
-          ghc --version
-          ./prototype-ci --help || true
+        run: ./prototype-ci --help || true
