@@ -30,15 +30,17 @@ jobs:
       - name: Run prototype pipeline & emit stub
         run: |
           python - << 'EOF'
-    import json
-    from pipeline.new_feature import run_new_feature
-    snippets, stub = run_new_feature("proof-dsl tagless-final example")
-    print("=== Snippets ===")
-    print(json.dumps(snippets, indent=2))
-    with open("ProofDslVerifier.hs", "w") as f:
-        f.write(stub)
-    print("Wrote stub to ProofDslVerifier.hs")
-    EOF
+          import json
+          from pipeline.new_feature import run_new_feature
+
+          snippets, stub = run_new_feature("proof-dsl tagless-final example")
+          print("=== Snippets ===")
+          print(json.dumps(snippets, indent=2))
+
+          with open("ProofDslVerifier.hs", "w") as f:
+              f.write(stub)
+          print("Wrote stub to ProofDslVerifier.hs")
+          EOF
 
       - name: Set up GHC
         uses: haskell/actions/setup@v1
@@ -57,4 +59,3 @@ jobs:
       - name: Smoke-test binary
         run: |
           ./dist/build/prototype-ci/prototype-ci --help || true
-
