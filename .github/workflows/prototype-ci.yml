@@ -27,12 +27,14 @@ jobs:
         run: python scripts/build_code_index.py . data/code_index
 
       - name: Run prototype pipeline & emit stub
+        # “|| true” ensures CI won’t fail if our placeholder stub-generator exits non-zero
         run: |
           python - << 'EOF' || true
           import json
           from pipeline.new_feature import run_new_feature
 
           snippets, stub = run_new_feature("proof-dsl tagless-final example")
+
           print("=== Snippets ===")
           print(json.dumps(snippets, indent=2))
 
@@ -42,7 +44,7 @@ jobs:
           EOF
 
       - name: Set up GHC (Haskell)
-        uses: haskell-actions/setup@v3
+        uses: haskell-actions/setup@v2
         with:
           ghc-version: "9.2.7"
           cabal-version: "3.6.2.0"
