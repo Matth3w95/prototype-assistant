@@ -8,6 +8,7 @@ on:
 jobs:
   build-prototype:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -25,17 +26,20 @@ jobs:
       - name: Build code index
         run: python scripts/build_code_index.py . data/code_index
 
-       - name: Run prototype pipeline and write stub
-     run: |
-       python - << 'EOF'
-       from pipeline.new_feature import run_new_feature
+      - name: Run prototype pipeline and write stub
+        run: |
+          python - << 'EOF'
+          from pipeline.new_feature import run_new_feature
 
-       snippets, stub = run_new_feature("proof-dsl tagless-final example")
-       with open("ProofDslVerifier.hs", "w") as f:
-           f.write(stub)
-       print("Wrote stub to ProofDslVerifier.hs")
-       EOF
+          # run_new_feature returns (snippets, stub_text)
+          snippets, stub = run_new_feature("proof-dsl tagless-final example")
 
+          # write the stub out as a Haskell file
+          with open("ProofDslVerifier.hs", "w") as f:
+              f.write(stub)
+
+          print("Wrote stub to ProofDslVerifier.hs")
+          EOF
 
       - name: Set up GHC (Haskell)
         uses: haskell/actions/setup@v1
@@ -53,5 +57,5 @@ jobs:
 
       - name: Smoke-test the binary
         run: |
-          # Adjust binary path if needed
+          # just verify it runs without crashing
           ./dist/build/prototype-ci/prototype-ci --help || true
