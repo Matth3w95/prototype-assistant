@@ -24,10 +24,22 @@ jobs:
           pip install --upgrade pip
           pip install scikit-learn jinja2 fire
 
+      - name: Lint Python
+        run: |
+          pip install black flake8
+          black --check .
+          flake8 .
+
+      - name: Run Python tests
+        run: |
+          pip install pytest
+          pytest tests/python
+
       - name: Build code index
         run: python scripts/build_code_index.py . data/code_index
 
       - name: Run prototype pipeline & emit stub
+        continue-on-error: true
         run: |
           python - << 'EOF'
           import json
@@ -39,23 +51,6 @@ jobs:
               f.write(stub)
           print("Wrote stub to ProofDslVerifier.hs")
           EOF
-        continue-on-error: true
 
-      # ← This is the Haskell‐compile placeholder: always succeeds.
       - name: (Temporary) Skip Haskell compile
         run: echo "Skipping Haskell compile for now"
-
-      # ← Once you’re ready, delete the step above and uncomment the block below,
-      #    which actually runs GHC:
-      #
-      # - name: Set up GHC
-      #   uses: haskell-actions/setup@v2
-      #   with:
-      #     ghc-version: "9.2.7"
-      #
-      # - name: Compile generated stub with ghc
-      #   run: |
-      #     ghc --make ProofDslVerifier.hs -outputdir .build -o prototype-ci
-      #
-      # - name: Smoke-test the binary
-      #   run: ./prototype-ci --help || true
