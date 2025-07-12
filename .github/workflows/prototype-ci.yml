@@ -27,21 +27,22 @@ jobs:
         run: python scripts/build_code_index.py . data/code_index
 
       - name: Run prototype pipeline & emit stub
+        # the "|| true" makes this step always succeed even if stubger fails
         run: |
           python - << 'EOF' || true
-import json
-from pipeline.new_feature import run_new_feature
+          import json
+          from pipeline.new_feature import run_new_feature
 
-# find snippets and get stub (stub is just a placeholder right now)
-snippets, stub = run_new_feature("proof-dsl tagless-final example")
+          snippets, stub = run_new_feature("proof-dsl tagless-final example")
 
-print("=== Snippets ===")
-print(json.dumps(snippets, indent=2))
+          print("=== Snippets ===")
+          print(json.dumps(snippets, indent=2))
 
-with open("ProofDslVerifier.hs", "w") as f:
-    f.write(stub)
-print("Wrote stub to ProofDslVerifier.hs")
-EOF
+          with open("ProofDslVerifier.hs", "w") as f:
+              f.write(stub)
+
+          print("Wrote stub to ProofDslVerifier.hs")
+          EOF
 
       - name: Set up GHC (Haskell)
         uses: haskell/actions/setup@v1
