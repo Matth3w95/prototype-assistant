@@ -10,11 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        name: Check out code
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
+        name: Set up Python 3.x
         with:
           python-version: "3.x"
 
@@ -27,9 +27,8 @@ jobs:
         run: python scripts/build_code_index.py . data/code_index
 
       - name: Run prototype pipeline & emit stub
-        # “|| true” ensures CI won’t fail if our placeholder stub-generator exits non-zero
         run: |
-          python - << 'EOF' || true
+          python - << 'EOF'
           import json
           from pipeline.new_feature import run_new_feature
 
@@ -42,9 +41,10 @@ jobs:
               f.write(stub)
           print("Wrote stub to ProofDslVerifier.hs")
           EOF
+        continue-on-error: true
 
-      - name: Set up GHC (Haskell)
-        uses: haskell-actions/setup@v2
+      - uses: haskell-actions/setup@v2
+        name: Set up GHC (Haskell)
         with:
           ghc-version: "9.2.7"
           cabal-version: "3.6.2.0"
