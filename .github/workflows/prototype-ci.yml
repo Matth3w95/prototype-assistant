@@ -1,24 +1,26 @@
- name: Prototype CI
+name: Prototype CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        name: Check out code
+      - name: Check out code
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
-        name: Set up Python 3.x
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: "3.x"
 
-      - name: Install Python deps
+      - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install scikit-learn jinja2 fire
@@ -26,17 +28,18 @@ jobs:
       - name: Build code index
         run: python scripts/build_code_index.py . data/code_index
 
-      - name: Run prototype pipeline & emit stub
+      - name: Generate Haskell stub
+        continue-on-error: true
         run: |
           python - << 'EOF'
           import json
           from pipeline.new_feature import run_new_feature
-          snippets, stub = run_new_feature("proof-dsl tagless-final example")
+          _, stub = run_new_feature("proof-dsl tagless-final example")
           with open("ProofDslVerifier.hs", "w") as f:
               f.write(stub)
-          print("Wrote stub to ProofDslVerifier.hs")
+          print("Stub written")
           EOF
-        continue-on-error: true
 
-      - name: (Temporary) Skip Haskell compile
-        run: echo "Skipping Haskell compile for now"
+      - name: ✅ Skip Haskell compile (temporary)
+        run: echo "Haskell compile skipped – CI is green!"
+
