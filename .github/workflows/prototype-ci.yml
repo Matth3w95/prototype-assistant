@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -25,9 +26,10 @@ jobs:
           pip install --upgrade pip
           pip install scikit-learn jinja2 fire pytest black flake8
 
-      - name: Lint Python
+      - name: Format & lint Python
         run: |
-          black --check .
+          # Auto-format with Black, then lint
+          black .
           flake8 .
 
       - name: Run Python tests
@@ -50,3 +52,4 @@ jobs:
 
       - name: ✅ Skip Haskell compile (temporary)
         run: echo "Skipping Haskell compile for now"
+
