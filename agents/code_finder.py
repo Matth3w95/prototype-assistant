@@ -1,6 +1,10 @@
+# agents/code_finder.py
+
 import pickle
 import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
 
 class CodeFinderAgent:
     def __init__(self, index_base="data/code_index"):
@@ -12,17 +16,27 @@ class CodeFinderAgent:
         # Vectorize query and documents
         qv = self.vec.transform([query])
         dv = self.vec.transform(self.docs)
+
         # Compute similarities
         sims = cosine_similarity(qv, dv).flatten()
+
         # Get top-k indices
         idxs = np.argsort(-sims)[:k]
+
         # Return path and snippet
         return [
-            {"path": self.paths[i], "snippet": self.docs[i][:500]}
+            {
+                "path": self.paths[i],
+                "snippet": self.docs[i][:500],
+            }
             for i in idxs
         ]
 
+
 if __name__ == "__main__":
     agent = CodeFinderAgent()
-    results = agent.find("proof-dsl tagless-final example", k=3)
+    results = agent.find(
+        query="proof-dsl tagless-final example",
+        k=3,
+    )
     print(results)
