@@ -1,3 +1,16 @@
+name: Prototype CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -28,7 +41,6 @@
         continue-on-error: true
         run: |
           python - << 'EOF'
-          import json
           from pipeline.new_feature import run_new_feature
           _, stub = run_new_feature("proof-dsl tagless-final example")
           with open("ProofDslVerifier.hs", "w") as f:
@@ -36,6 +48,5 @@
           print("Stub written")
           EOF
 
-      - name: (Temporary) Skip Haskell compile
+      - name: ✅ Skip Haskell compile (temporary)
         run: echo "Skipping Haskell compile for now"
-
