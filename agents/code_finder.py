@@ -1,8 +1,5 @@
-# agents/code_finder.py
-
 import pickle
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 class CodeFinderAgent:
@@ -26,7 +23,6 @@ class CodeFinderAgent:
         ]
 
 if __name__ == "__main__":
-    import fire
     agent = CodeFinderAgent()
-    results = agent.find(query="proof-dsl tagless-final example", k=3)
+    results = agent.find("proof-dsl tagless-final example", k=3)
     print(results)

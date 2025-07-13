@@ -1,11 +1,7 @@
-# pipeline/new_feature.py
-
-
 import json
 from agents.code_finder import CodeFinderAgent
 from agents.template_generator import TemplateGeneratorAgent
 import fire
-
 
 def run_new_feature(query: str):
     # 1. Find code snippets
